@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="description" content="Cache Saver is a modular, plug-and-play, and asynchronous caching framework for LLM inference that reduces cost by ~25% and CO2 by ~35%. Accepted at EMNLP 2025 (Findings).">
+  <meta name="keywords" content="Cache Saver, LLM, caching, inference, reproducibility, EMNLP 2025">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cache Saver</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/js/all.min.js"></script>
+
+  <style>
+    body {
+      font-family: 'Noto Sans', sans-serif;
+    }
+
+    .publication-title {
+      font-family: 'Google Sans', sans-serif;
+    }
+
+    .publication-authors {
+      font-family: 'Google Sans', sans-serif;
+    }
+
+    .publication-authors a {
+      color: hsl(204, 86%, 53%) !important;
+    }
+
+    .publication-authors a:hover {
+      text-decoration: underline;
+    }
+
+    .author-block {
+      display: inline-block;
+    }
+
+    .link-block a {
+      margin-top: 5px;
+      margin-bottom: 5px;
+    }
+
+    .teaser .hero-body {
+      padding-top: 0;
+      padding-bottom: 3rem;
+    }
+
+    .teaser {
+      font-family: 'Google Sans', sans-serif;
+    }
+
+    /* Code blocks */
+    .code-block {
+      background: #f6f8fa;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 1.5rem;
+      border: 1px solid #e1e4e8;
+    }
+
+    .code-block-header {
+      padding: 0.5rem 1rem;
+      font-size: 0.8rem;
+      font-weight: 700;
+      font-family: 'Google Sans', sans-serif;
+      letter-spacing: 0.03em;
+      border-bottom: 1px solid #e1e4e8;
+    }
+
+    .code-block-header.before-header {
+      background: #fef2f2;
+      color: #991b1b;
+    }
+
+    .code-block-header.after-header {
+      background: #f0fdf4;
+      color: #166534;
+    }
+
+    .code-block-header.example-header {
+      background: #eff6ff;
+      color: #1e40af;
+    }
+
+    .code-block pre {
+      margin: 0 !important;
+      padding: 1rem 1.25rem !important;
+      background: #f6f8fa !important;
+      font-size: 0.85rem;
+      line-height: 1.6;
+      border-radius: 0;
+    }
+
+
+    .code-comparison {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+    }
+
+    @media (max-width: 768px) {
+      .code-comparison {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .install-command {
+      background: #f6f8fa;
+      color: #24292e;
+      padding: 0.85rem 1.5rem;
+      border-radius: 8px;
+      border: 1px solid #e1e4e8;
+      font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      font-size: 0.95rem;
+      text-align: center;
+      margin-bottom: 1.75rem;
+    }
+
+    .install-command .cmd {
+      color: hsl(204, 86%, 53%);
+      font-weight: 600;
+    }
+
+    /* Stat cards */
+    .stat-cards {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      flex-wrap: wrap;
+      margin-top: 1.5rem;
+    }
+
+    .stat-card {
+      text-align: center;
+      flex: 1;
+      min-width: 180px;
+      max-width: 240px;
+    }
+
+    .stat-card .stat-number {
+      font-size: 2.5rem;
+      font-weight: 800;
+      font-family: 'Google Sans', sans-serif;
+      color: hsl(204, 86%, 53%);
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+
+    .stat-card .stat-label {
+      font-size: 0.9rem;
+      color: #666;
+      margin-top: 0.25rem;
+    }
+
+    /* Results table */
+    .results-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+    }
+
+    .results-table th {
+      background: hsl(204, 86%, 53%);
+      color: #fff;
+      font-weight: 600;
+      padding: 0.65rem 1rem;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+
+    .results-table td {
+      padding: 0.65rem 1rem;
+      border-bottom: 1px solid #eee;
+      font-size: 0.9rem;
+    }
+
+    .results-table tr:nth-child(even) td {
+      background: #fafbfd;
+    }
+
+    /* Pipeline diagram */
+    .pipeline-box {
+      background: #f6f8fa;
+      color: #24292e;
+      border-radius: 8px;
+      border: 1px solid #e1e4e8;
+      padding: 1.25rem 1.75rem;
+      font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      font-size: 0.85rem;
+      line-height: 2.2;
+      overflow-x: auto;
+      margin: 1.5rem 0;
+    }
+
+    .pipeline-box .pipe-label {
+      color: hsl(204, 86%, 53%);
+      font-weight: 600;
+    }
+
+    .pipeline-box .pipe-arrow {
+      color: #8250df;
+    }
+
+    .pipeline-box .pipe-component {
+      color: #1a7f37;
+      font-weight: 600;
+    }
+
+    .pipeline-box .pipe-model {
+      color: #bf5700;
+      font-weight: 600;
+    }
+
+    /* Component table */
+    .component-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+
+    .component-table th {
+      text-align: left;
+      padding: 0.6rem 1rem;
+      background: hsl(204, 86%, 53%);
+      color: #fff;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .component-table td {
+      padding: 0.6rem 1rem;
+      border-bottom: 1px solid #eee;
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .component-table tr:nth-child(even) td {
+      background: #fafbfd;
+    }
+
+    /* Providers */
+    .provider-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.6rem;
+      margin: 1rem 0;
+    }
+
+    .provider-tag {
+      background: #f0f0f0;
+      border-radius: 6px;
+      padding: 0.45rem 1rem;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #333;
+      font-family: 'Google Sans', sans-serif;
+    }
+
+    .provider-accordion {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .provider-details {
+      border: 1px solid #e1e4e8;
+      border-bottom: none;
+      background: #fff;
+    }
+
+    .provider-details:first-child {
+      border-radius: 8px 8px 0 0;
+    }
+
+    .provider-details:last-child {
+      border-bottom: 1px solid #e1e4e8;
+      border-radius: 0 0 8px 8px;
+    }
+
+    .provider-details summary {
+      padding: 0.6rem 1rem;
+      cursor: pointer;
+      font-family: 'Google Sans', sans-serif;
+      font-weight: 600;
+      font-size: 0.92rem;
+      color: #24292e;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .provider-details summary::-webkit-details-marker { display: none; }
+
+    .provider-details summary::after {
+      content: '\25B8';
+      font-size: 0.8rem;
+      color: #888;
+      transition: transform 0.2s;
+    }
+
+    .provider-details[open] summary::after {
+      transform: rotate(90deg);
+    }
+
+    .provider-details summary:hover {
+      background: #f6f8fa;
+    }
+
+    .provider-details pre {
+      margin: 0 !important;
+      padding: 0.6rem 1rem !important;
+      background: #f6f8fa !important;
+      border-top: 1px solid #e1e4e8;
+      border-radius: 0;
+      font-size: 0.82rem;
+      line-height: 1.5;
+    }
+
+    /* BibTeX */
+    .bibtex-wrapper {
+      position: relative;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 0.6rem;
+      right: 0.6rem;
+      background: rgba(255,255,255,0.12);
+      border: none;
+      color: #c9d1d9;
+      padding: 0.35rem 0.75rem;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 0.75rem;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+
+    .copy-btn:hover {
+      background: rgba(255,255,255,0.22);
+    }
+
+    .copy-btn.copied {
+      background: #238636;
+      color: #fff;
+    }
+
+    /* Section dividers */
+    .section hr {
+      border: none;
+      border-top: 1px dashed #ccc;
+      margin: 2.5rem 0;
+    }
+
+    /* Feature section */
+    .feature-item {
+      margin-bottom: 1.75rem;
+    }
+
+    .feature-item h4 {
+      font-family: 'Google Sans', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 0.4rem;
+    }
+
+    .feature-item p {
+      font-size: 0.95rem;
+      line-height: 1.7;
+      color: #444;
+    }
+
+    /* Example cards */
+    .example-cards {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 1rem;
+    }
+
+    .example-card {
+      flex: 1;
+      min-width: 250px;
+      max-width: 380px;
+      background: #f6f8fa;
+      border: 1px solid #e1e4e8;
+      border-radius: 8px;
+      padding: 1.5rem;
+      text-align: center;
+    }
+
+    .example-card h4 {
+      font-family: 'Google Sans', sans-serif;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .example-card p {
+      font-size: 0.88rem;
+      color: #555;
+      margin-bottom: 1rem;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-body">
+      <div class="container is-max-desktop">
+        <div class="columns is-centered">
+          <div class="column has-text-centered">
+            <h1 class="title is-1 publication-title">Cache Saver</h1>
+            <h2 class="subtitle is-4" style="margin-top: -0.5rem;">
+              <b>A Modular Framework for Efficient, Affordable,<br>and Reproducible LLM Inference</b>
+            </h2>
+
+            <div class="is-size-5 publication-authors">
+              <span class="author-block"><b>Nearchos Potamitis</b><sup>1</sup>,</span>
+              <span class="author-block"><b>Lars Klein</b><sup>2</sup>,</span>
+              <span class="author-block"><b>Bardia Mohammadi</b><sup>3</sup>,</span>
+              <span class="author-block"><b>Chongyang Xu</b><sup>3</sup>,</span>
+              <br>
+              <span class="author-block"><b>Attreyee Mukherjee</b><sup>3</sup>,</span>
+              <span class="author-block"><b>Laurent Bindschaedler</b><sup>3</sup>,</span>
+              <span class="author-block"><b>Niket Tandon</b><sup>4</sup>,</span>
+              <span class="author-block"><b>Akhil Arora</b><sup>1</sup></span>
+            </div>
+
+            <div class="is-size-6 publication-authors" style="margin-top: 0.5rem;">
+              <span class="author-block"><sup>1</sup>Aarhus University</span> &nbsp;
+              <span class="author-block"><sup>2</sup>EPFL</span>
+              <span class="author-block"><sup>3</sup>MPI SWS</span> &nbsp;
+              <span class="author-block"><sup>4</sup>Microsoft Research</span> &nbsp;
+            </div>
+
+            <!-- <div class="is-size-5 publication-authors" style="margin-top: 0.75rem;">
+              <span class="author-block" style="color: #e63946;"><b>EMNLP 2025 (Findings)</b></span>
+            </div> -->
+
+            <div class="column has-text-centered">
+              <div class="publication-links">
+                <span class="link-block">
+                  <a href="https://aclanthology.org/2025.findings-emnlp.1402.pdf" target="_blank"
+                    class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon"><i class="ai ai-arxiv"></i></span>
+                    <span>arXiv</span>
+                  </a>
+                </span>
+                <span class="link-block">
+                  <a href="https://github.com/au-clan/cachesaver" target="_blank"
+                    class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon"><i class="fab fa-github"></i></span>
+                    <span>Code</span>
+                  </a>
+                </span>
+                <span class="link-block">
+                  <a href="https://pypi.org/project/cachesaver/" target="_blank"
+                    class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon"><i class="fab fa-python"></i></span>
+                    <span>PyPI</span>
+                  </a>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Teaser: Headline Results -->
+  <section class="hero teaser">
+    <div class="container is-max-desktop">
+      <div class="hero-body" style="padding-left: 0px;">
+        <div class="stat-cards">
+          <div class="stat-card">
+            <div class="stat-number">~25%</div>
+            <div class="stat-label">Cost Reduction</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">~35%</div>
+            <div class="stat-label">CO<sub>2</sub> Reduction</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">Up to ~60%</div>
+            <div class="stat-label">Savings In Practical Scenarios</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Abstract -->
+  <section class="section" style="background-color: #efeff081;">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-six-fifths">
+          <h2 class="title is-3">Abstract</h2>
+          <div class="content has-text-justified">
+            <p>
+              Cache Saver is a modular, plug-and-play, and asynchronous framework that facilitates high-level inference optimizations, integrating cleanly into existing systems without requiring changes to the end-user application logic or the underlying LLM. At its heart is a <em>namespace-aware list-valued cache</em> that ensures <strong>statistical integrity</strong> of LLM responses by generating <em>i.i.d.</em> responses within a namespace while enabling response <strong>reuse</strong> across namespaces, all while guaranteeing full <strong>reproducibility</strong>.
+              On average across five reasoning strategies, five benchmark tasks, and three LLMs, Cache Saver <strong>reduces cost by ~25% and CO<sub>2</sub> by ~35%</strong>. In practical scenarios such as benchmarking and ablation analysis, savings reach <strong>up to 60%</strong>.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Quick Start -->
+  <section class="section">
+    <div class="columns is-centered has-text-centered">
+      <div class="column">
+        <h2 class="title is-3">Quick Start</h2>
+      </div>
+    </div>
+
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column">
+          <div class="content">
+            <div class="install-command">
+              $ <span class="cmd">pip install cachesaver</span>
+            </div>
+
+            <p style="text-align: center; color: #555; margin-bottom: 1.5rem;">
+              Just change the import &mdash; everything else stays the same.
+            </p>
+
+            <div class="code-comparison">
+              <div class="code-block">
+                <div class="code-block-header before-header">Before</div>
+                <pre><code class="language-python"><strong>from openai import AsyncOpenAI</strong>
+
+  client = AsyncOpenAI()
+
+  response = await client.chat.completions.create(
+      model="gpt-4.1-nano",
+      messages=[{
+          "role": "user",
+          "content": "What is the capital of France?"
+      }],
+  )
+  print(response.choices[0].message.content)</code></pre>
+              </div>
+              <div class="code-block">
+                <div class="code-block-header after-header">After</div>
+                <pre><code class="language-python"><strong>from cachesaver.models.openai import AsyncOpenAI</strong>
+
+  client = AsyncOpenAI()
+
+  response = await client.chat.completions.create(
+      model="gpt-4.1-nano",
+      messages=[{
+          "role": "user",
+          "content": "What is the capital of France?"
+      }],
+  )
+  print(response.choices[0].message.content)</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- Key Features with Code Examples -->
+  <section class="section" style="background-color: #efeff081;">
+    <div class="columns is-centered has-text-centered">
+      <div class="column">
+        <h2 class="title is-3">Key Features</h2>
+      </div>
+    </div>
+
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column">
+          <div class="content has-text-justified">
+
+            <!-- Reproducibility -->
+            <div class="feature-item">
+              <h4>Reproducibility</h4>
+              <p>
+                Namespaces track which cached responses have been consumed, so re-running an experiment from scratch replays the exact same results in the exact same order &mdash; even for duplicate prompts.
+              </p>
+            </div>
+
+            <div class="code-block">
+              <div class="code-block-header example-header">Reproducibility</div>
+              <pre><code class="language-python"># Run 1 — calls the API
+results_run1 = await classify(sentences, namespace="experiment_v1")
+
+# Run 2 — same namespace, identical results from cache
+results_run2 = await classify(sentences, namespace="experiment_v1")
+assert results_run1 == results_run2  # Always true</code></pre>
+            </div>
+
+            <hr>
+
+            <!-- Error Recovery -->
+            <div class="feature-item">
+              <h4>Error Recovery</h4>
+              <p>
+                Crash on item 7 of 10? Re-run and items 1&ndash;6 are served from cache instantly. Only items 7&ndash;10 hit the API.
+              </p>
+            </div>
+
+            <div class="code-block">
+              <div class="code-block-header example-header">Error Recovery</div>
+              <pre><code class="language-python"># Attempt 1 — crashes at item 7
+try:
+    results = await process(items, namespace="my_exp")
+except RuntimeError:
+    pass  # Items 1-6 are cached
+
+# Attempt 2 — items 1-6 from cache, only 7-10 call API
+results = await process(items, namespace="my_exp")</code></pre>
+            </div>
+
+            <hr>
+
+            <!-- Async Parallelism -->
+            <div class="feature-item">
+              <h4>Async Parallelism</h4>
+              <p>
+                Fully async-native. Use <code>asyncio.gather</code> for concurrent requests &mdash; Cache Saver handles batching, deduplication, and caching transparently.
+              </p>
+            </div>
+
+            <div class="code-block">
+              <div class="code-block-header example-header">Concurrent Requests</div>
+              <pre><code class="language-python">import asyncio
+
+results = await asyncio.gather(*[
+    client.chat.completions.create(
+        model="gpt-4.1-nano",
+        messages=[{"role": "user", "content": prompt}],
+    )
+    for prompt in prompts
+])</code></pre>
+            </div>
+
+            <hr>
+
+            <!-- Statistical Integrity -->
+            <div class="feature-item">
+              <h4>Statistical Integrity</h4>
+              <p>
+                Unlike naive key-value caches, Cache Saver uses a <strong>list-valued cache</strong> managed through <strong>namespaces</strong>. Within a namespace, all responses to a given prompt are guaranteed to be <em>i.i.d.</em> &mdash; a response is never reused within the same namespace. Across namespaces, responses <em>are</em> reused via <strong>stochastic coupling</strong>, which is what drives the cost savings.
+              </p>
+            </div>
+
+            <hr>
+
+            <!-- Request Deduplication -->
+            <div class="feature-item">
+              <h4>Request Deduplication</h4>
+              <p>
+                Duplicate prompts within a batch are automatically merged, reducing redundant API calls. Responses are redistributed to all original requesters while preserving correctness.
+              </p>
+            </div>
+
+            <hr>
+
+            <!-- Deterministic Ordering -->
+            <div class="feature-item">
+              <h4>Deterministic Ordering</h4>
+              <p>
+                When multiple async tasks process the same prompt concurrently, Cache Saver caches by request content &mdash; not completion order. A built-in reordering module ensures replays are deterministic regardless of which task finishes first.
+              </p>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Key Results -->
+  <section class="section">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-six-fifths">
+        <h2 class="title is-3">Key Results</h2>
+      </div>
+    </div>
+
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column">
+          <div class="content has-text-justified">
+            <p>
+              Multi-step reasoning strategies (Tree-of-Thought, ReAct, RAP, FoA, ReST-MCTS*, etc.) are highly repetitive &mdash;
+              <strong>~50% of prompts are duplicates</strong> both within a single method execution and across methods on the same task.
+              Cache Saver exploits this redundancy across three practical scenarios:
+            </p>
+
+            <div class="text-center" style="margin: 1.5rem 0;">
+              <img src="fig5.png" alt="Practical application results across cost, tokens, latency, and throughput for hyperparameter tuning, ablation analysis, and benchmarking" style="max-width: 100%; height: auto;">
+              <p style="text-align: center; font-style: italic; font-size: 0.85rem; color: #666; margin-top: 0.75rem;">
+                Three practical scenarios using GPT-4.1-Nano across the benchmarks of Game of 24, HumanEval, and SciBench.
+              </p>
+            </div>
+
+            <p>
+              The figure shows Cache Saver's impact across three practical ML scenarios.
+              <strong>A1-Hyperparameter tuning:</strong> grid search over Tree-of-Thought configurations (tree width, depth, number of evaluations).
+              <strong>A2-Ablation analysis:</strong> testing three variations of the FoA algorithm (removing the selection phase, backtracking, or resampling).
+              <strong>A3-Benchmarking:</strong> comparing entirely different reasoning strategies (ToT, GoT, FoA).
+            </p>
+            <p>
+              The <span style="color: #0073b2; font-weight: 600;">blue bars</span> show the cost <em>without</em> Cache Saver.
+              The <span style="color: #de8f04; font-weight: 600;">orange bars</span> show the <em>average</em> cost with Cache Saver. Because experiments share prompts, cached responses are reused and average cost drops significantly.
+              The <span style="color: #039e73; font-weight: 600;">green bars</span> show the <em>marginal</em> cost, that is the added cost of incorporating one more configuration, variation, or method into the experiment.
+            </p>
+            <p>
+              The reuse potential depends on how similar the experiments are: hyperparameter tuning (A1) achieves the highest savings (<strong>6x</strong> lower cost, tokens, and latency) since different configurations of the same method share most prompts. Ablation analysis (A2) achieves <strong>2.5x</strong> savings. Finally, benchmarking across different methods (A3) still achieves <strong>2x</strong> savings, a notable finding since even structurally different reasoning strategies share significant prompt overlap. These savings are <strong>on top of</strong> existing platform-level optimizations (paged attention, KV caching, prefix sharing, etc.).
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Architecture -->
+  <section class="section" style="background-color: #efeff081;">
+    <div class="columns is-centered has-text-centered">
+      <div class="column">
+        <h2 class="title is-3">Architecture</h2>
+      </div>
+    </div>
+
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column">
+          <div class="content has-text-justified">
+            <p>
+              Cache Saver composes four async pipeline components around your model:
+            </p>
+
+            <!-- <div class="pipeline-box">
+<span class="pipe-label">OnlineAPI</span> <span style="color:#888;">(cloud providers)</span><br>
+&nbsp;&nbsp;User <span class="pipe-arrow">&rarr;</span> <span class="pipe-component">Batcher</span> <span class="pipe-arrow">&rarr;</span> <span class="pipe-component">Reorderer</span> <span class="pipe-arrow">&rarr;</span> <span class="pipe-component">Deduplicator</span> <span class="pipe-arrow">&rarr;</span> <span class="pipe-component">Cache</span> <span class="pipe-arrow">&rarr;</span> <span class="pipe-model">Model</span><br>
+<br>
+<span class="pipe-label">LocalAPI</span> <span style="color:#888;">(local inference)</span><br>
+&nbsp;&nbsp;User <span class="pipe-arrow">&rarr;</span> <span class="pipe-component">Cache</span> <span class="pipe-arrow">&rarr;</span> <span class="pipe-component">Batcher</span> <span class="pipe-arrow">&rarr;</span> <span class="pipe-model">Model</span>
+            </div> -->
+
+            <table class="component-table">
+              <thead>
+                <tr>
+                  <th>Component</th>
+                  <th>Role</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Cacher</strong></td>
+                  <td>Namespace-aware list-valued cache with per-key async mutexes. Tracks per-namespace usage counts for i.i.d. sampling.</td>
+                </tr>
+                <tr>
+                  <td><strong>Deduplicator</strong></td>
+                  <td>Merges duplicate prompts within a batch by (hash, namespace), combines n values, redistributes responses.</td>
+                </tr>
+                <tr>
+                  <td><strong>Reorderer</strong></td>
+                  <td>Sorts by stable identifier before processing, restores original order after. Ensures deterministic results.</td>
+                </tr>
+                <tr>
+                  <td><strong>Batcher</strong></td>
+                  <td>Async producer-consumer queue. Groups requests by batch size with timeout.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Supported Providers -->
+  <section class="section">
+    <div class="columns is-centered has-text-centered">
+      <div class="column">
+        <h2 class="title is-3">Supported Providers</h2>
+      </div>
+    </div>
+
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column">
+          <div class="content">
+            <p style="text-align: center; color: #666; font-size: 0.9rem; margin-bottom: 1.25rem;">
+              All cloud providers share the same interface as their original SDK. Just change the import.
+            </p>
+
+            <div class="provider-accordion">
+              <details class="provider-details">
+                <summary>OpenAI</summary>
+                <pre><code class="language-python">from cachesaver.models.openai import AsyncOpenAI, OpenAI</code></pre>
+              </details>
+              <details class="provider-details">
+                <summary>Anthropic</summary>
+                <pre><code class="language-python">from cachesaver.models.anthropic import AsyncAnthropic, Anthropic</code></pre>
+              </details>
+              <details class="provider-details">
+                <summary>Google Gemini</summary>
+                <pre><code class="language-python">from cachesaver.models.gemini import AsyncGemini, Gemini</code></pre>
+              </details>
+              <details class="provider-details">
+                <summary>Together AI</summary>
+                <pre><code class="language-python">from cachesaver.models.together import AsyncTogether</code></pre>
+              </details>
+              <details class="provider-details">
+                <summary>Groq</summary>
+                <pre><code class="language-python">from cachesaver.models.groq import AsyncGroq, Groq</code></pre>
+              </details>
+              <details class="provider-details">
+                <summary>OpenRouter</summary>
+                <pre><code class="language-python">from cachesaver.models.openrouter import AsyncOpenRouter, OpenRouter</code></pre>
+              </details>
+              <details class="provider-details">
+                <summary>HuggingFace (Inference Providers)</summary>
+                <pre><code class="language-python">from cachesaver.models.huggingface import AsyncHuggingFace, HuggingFace</code></pre>
+              </details>
+              <details class="provider-details">
+                <summary>vLLM</summary>
+                <pre><code class="language-python">from cachesaver.models.vllm import AsyncVLLM, VLLM</code></pre>
+              </details>
+              <details class="provider-details">
+                <summary>HuggingFace</summary>
+                <pre><code class="language-python">from cachesaver.models.transformers import AsyncHFTransformers, HFTransformers</code></pre>
+              </details>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Examples -->
+  <section class="section" style="background-color: #efeff081;">
+    <div class="columns is-centered has-text-centered">
+      <div class="column">
+        <h2 class="title is-3">Examples</h2>
+      </div>
+    </div>
+
+    <div class="container is-max-desktop">
+      <div class="example-cards">
+        <div class="example-card">
+          <h4>Tutorial</h4>
+          <p>Full walkthrough: quickstart, reproducibility, error recovery, parallelism, ReAct agents, Tree-of-Thought, and RAG pipelines.</p>
+          <a class="button is-normal is-rounded is-dark" href="https://github.com/nearchos-potamitis/cachesaver/blob/main/examples/tutorial.ipynb" target="_blank">
+            <span class="icon"><i class="fas fa-book"></i></span>
+            <span>View Notebook</span>
+          </a>
+        </div>
+        <div class="example-card">
+          <h4>Provider Examples</h4>
+          <p>Usage examples for all supported providers: OpenAI, Anthropic, Gemini, Together, Groq, OpenRouter, and more.</p>
+          <a class="button is-normal is-rounded is-dark" href="https://github.com/nearchos-potamitis/cachesaver/blob/main/examples/providers_example.ipynb" target="_blank">
+            <span class="icon"><i class="fas fa-code"></i></span>
+            <span>View Notebook</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BibTeX -->
+  <section class="section" id="BibTeX">
+    <div class="container is-max-desktop content">
+      <h2 class="title">BibTeX</h2>
+      <div class="bibtex-wrapper">
+        <button class="copy-btn" onclick="copyBibtex(this)">Copy</button>
+        <pre id="bibtex-content"><code>@inproceedings{
+potamitis2025cache,
+title={Cache Saver: A Modular Framework for Efficient, Affordable, and Reproducible {LLM} Inference},
+author={Nearchos Potamitis and Lars Henning Klein and Bardia Mohammadi and Chongyang Xu and Attreyee Mukherjee and Niket Tandon and Laurent Bindschaedler and Akhil Arora},
+booktitle={The 2025 Conference on Empirical Methods in Natural Language Processing},
+year={2025},
+url={https://openreview.net/forum?id=2Nxih3ySSi}
+}</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- Acknowledgement -->
+  <section class="section" id="Acknowledgement">
+    <div class="container is-max-desktop content">
+      <p style="text-align: center; color: #888; font-size: 0.85rem;">
+        <strong style="color: #333;">Cache Saver</strong> &mdash;
+        Aarhus University &middot; EPFL &middot; MPI SWS &middot; Microsoft Research
+        <br>
+        This website is adapted from <a href="https://github.com/nerfies/nerfies.github.io">Nerfies</a>, licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">Creative Commons Attribution-ShareAlike 4.0 International License</a>.
+      </p>
+    </div>
+  </section>
+
+  <!-- Scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+  <script>
+    hljs.highlightAll();
+
+    function copyBibtex(btn) {
+      const code = document.querySelector('#bibtex-content code');
+      navigator.clipboard.writeText(code.textContent).then(() => {
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = 'Copy';
+          btn.classList.remove('copied');
+        }, 2000);
+      });
+    }
+  </script>
+
+</body>
+</html>
